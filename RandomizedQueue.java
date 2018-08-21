@@ -1,5 +1,6 @@
 import edu.princeton.cs.algs4.StdRandom;
 import java.util.Iterator;
+import java.util.NoSuchElementException;
 
 public class RandomizedQueue<Item> implements Iterable<Item> {
    Item[] container;
@@ -16,20 +17,36 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
        return itemCount;
    }
    public void enqueue(Item item) {
-       container[endPosition] = item;
-       endPosition++;
-       arrayChange();
+       if(item == null) {
+           throw new IllegalArgumentException();
+       } else {
+           container[endPosition] = item;
+           endPosition++;
+           itemCount++;
+           arrayChange();
+       }
    }
    public Item dequeue() {
-       int position = StdRandom.uniform(endPosition);
-       Item toReturn = container[position];
-       container[position] = null;
-       itemCount--;
-       arrayChange();
-       return toReturn;
+       if(itemCount == 0) {
+           throw new NoSuchElementException();
+       } else {
+           int position = StdRandom.uniform(endPosition);
+           while (container[position] == null) {
+               position = StdRandom.uniform(endPosition);
+           }
+           Item toReturn = container[position];
+           container[position] = null;
+           itemCount--;
+           arrayChange();
+           return toReturn;
+       }
    }
    public Item sample() {
-       return container[StdRandom.uniform(endPosition)];
+       if(itemCount == 0) {
+           throw new NoSuchElementException();
+       } else {
+           return container[StdRandom.uniform(endPosition)];
+       }
    }
    public Iterator<Item> iterator() {
        return new RandomizedQueueIterator();
@@ -42,28 +59,20 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
            return itemsReturned != itemCount;
        }
        public Item next() {
-           while(container[currentIndex] == null) {
+           if(!hasNext()) {
+               throw new NoSuchElementException();
+           } else {
+               while(container[currentIndex] == null) {
+                   currentIndex++;
+               }
+               Item toReturn = container[currentIndex];
                currentIndex++;
+               return toReturn;
            }
-           Item toReturn = container[currentIndex];
-           currentIndex++;
-           return toReturn;
        }
-   }
-   public static void main(String[] args) {
-       RandomizedQueue test = new RandomizedQueue();
-       test.enqueue("1");
-       System.out.println(test.sample());
-       System.out.println(test.dequeue());
-       System.out.println(test.isEmpty());
-       test.enqueue("2");
-       test.enqueue("3");
-       System.out.println(test.sample());
-       System.out.println(test.sample());
-       System.out.println(test.sample());
-       System.out.println(test.sample());
-       System.out.println(test.sample());
-       System.out.println(test.sample());
+       public void remove() {
+           throw new UnsupportedOperationException();
+       }
    }
        
    private void copyAndCompact(Item[] newArray) {
@@ -88,12 +97,33 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
        copyAndCompact(newArray);
    }
    private void arrayChange() {
-       if(endPosition == container.length - 1 && itemCount > 0.75 * container.length) {
+       if(endPosition == container.length && itemCount > 0.75 * container.length) {
            grow();
-       } else if(endPosition == container.length - 1) {
+       } else if(endPosition == container.length) {
            copyAndCompact(container);
        } else if(itemCount < 0.25 * container.length) {
            shrink();
        }
+   }
+   
+   public static void main(String[] args) {
+       RandomizedQueue test = new RandomizedQueue();
+       test.enqueue("1");
+       test.enqueue("2");
+       test.enqueue("3");
+       //System.out.println(test.container.length);
+       /*System.out.println(test.sample());
+       System.out.println(test.sample());
+       System.out.println(test.sample());
+       System.out.println(test.sample());
+       System.out.println(test.sample());
+       System.out.println(test.sample());
+       */
+       test.enqueue("4");
+       test.enqueue("5");
+       System.out.println(test.dequeue());
+       System.out.println(test.dequeue());
+       System.out.println(test.dequeue());
+       System.out.println(test.dequeue());
    }
 }
